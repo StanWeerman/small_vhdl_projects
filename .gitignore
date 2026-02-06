@@ -1,0 +1,7 @@
+.DS_Store
+target
+build
+zig-out
+.zig-cache
+/work
+*.fst
