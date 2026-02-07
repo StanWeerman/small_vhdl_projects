@@ -3,5 +3,5 @@ target
 build
 zig-out
 .zig-cache
-/work
+work/
 *.fst
