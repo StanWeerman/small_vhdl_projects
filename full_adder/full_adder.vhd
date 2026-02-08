@@ -9,8 +9,15 @@ entity full_adder is
     );
 end full_adder;
 
-architecture full_adder of full_adder is
+architecture rtl of full_adder is
+    --signal a_xor_b : std_logic;
 begin
-  sum <= (a xor b) xor c_in;
-  c_out <= ((a xor b) and c_in) or (a and b);
-end full_adder;
+    ADD: process(a, b, c_in)
+        variable a_xor_b: std_logic;
+    begin
+        a_xor_b := a xor b;
+        sum <= a_xor_b xor c_in;
+        c_out <= (a_xor_b and c_in) or (a and b);
+    end process;
+
+end rtl;
