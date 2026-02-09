@@ -46,9 +46,14 @@ then
 fi
 mkdir "build"
 
+if [ -e work ]
+then
+    rm -r work
+fi
+
 echo "------Start------"
 
-nvc -a $name.vhd ${name}_tb.vhd
+nvc -a $name.vhd cpu_package.vhd ${name}_tb.vhd
 nvc -e ${name}_tb
 nvc -r ${name}_tb --wave=build/wave.fst
 
