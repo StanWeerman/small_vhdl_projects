@@ -12,9 +12,22 @@ end full_adder_tb;
 architecture full_adder_tb of full_adder_tb is
     signal a, b, c_in : std_logic;
     signal sum, c_out : std_logic;
+
+    component full_adder is
+        port (
+        a : in  std_logic;
+        b : in  std_logic;
+        c_in : in  std_logic;
+        sum : in  std_logic;
+        c_out : out  std_logic);
+    end component full_adder;
+
 begin
     -- connecting testbench signals with half_adder.vhd
-    UUT : entity work.full_adder port map (a => a, b => b, c_in => c_in, sum => sum, c_out => c_out);
+    UUT : full_adder port map (a => a, b => b, c_in => c_in, sum => sum, c_out => c_out);
+    -- Can do direct instantiation
+    --UUT : entity work.full_adder port map (a => a, b => b, c_in => c_in, sum => sum, c_out => c_out);
+
 
     tb1 : process
         constant period: time := 20 ns;
