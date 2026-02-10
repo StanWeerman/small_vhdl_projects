@@ -1,0 +1,7 @@
+cpu/pc.vhd
+cpu/reg_file.vhd
+cpu/alu.vhd
+my_8_bit_cpu.vhd
+memory.vhd
+cpu_package.vhd
+my_8_bit_cpu_tb.vhd
