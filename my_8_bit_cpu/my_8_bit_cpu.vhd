@@ -64,6 +64,7 @@ begin
     );
 
     reg_file_inst: entity work.reg_file
+     generic map(DEBUG => 1)
      port map(
         clk => clk,
         reg_wr => reg_wr,
