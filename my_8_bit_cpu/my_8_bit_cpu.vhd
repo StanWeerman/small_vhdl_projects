@@ -16,7 +16,7 @@ end cpu;
 architecture cpu of cpu is
     -- Control signals
     signal control: std_logic_vector(6 downto 0);
-    signal mov, jump, branch, beq_bne_b, mem_rd, mem_wr, alu, reg_wr, memtoreg : std_logic;
+    signal mov, jump, branch, beq_bne_b, alu, reg_wr, memtoreg : std_logic;
 
     -- PC signals
     signal branch_success: std_logic;
@@ -35,10 +35,10 @@ begin
     jump <= '0' when (alu or branch) else control(4);
     branch <= '0' when alu else control(3);
     beq_bne_b <= control(4);
-    mem_rd <= '0' when alu else control(2);
-    mem_wr <= '0' when alu else control(1);
+    m_rd <= '0' when alu else control(2);
+    m_wr <= '0' when alu else control(1);
     alu <= control(0);
-    reg_wr <= alu or mem_rd;
+    reg_wr <= alu or m_rd;
     memtoreg <= not alu;
 
     -- PC init
@@ -78,11 +78,13 @@ begin
 
     --branch_success <= branch and '1' when (reg_0_data = (others => '0')) else '0' when beq_bne_b else '1' when (reg_0_data /= (others => '0')) else '0';
     branch_success <= branch and beq_bne_b xor '0' when (unsigned(reg_0_data) /= 0) else '1';
+    a <= to_integer(unsigned(reg_1_data & reg_2_data));
+    d_out <= write_data;
 
     process (all) is
     begin
         if memtoreg then
-            write_data <= d_in when mem_rd else reg_0_data;
+            write_data <= d_in when m_rd else reg_0_data;
         else
             write_data <= instruction(12 downto 5) when mov else alu_output;
         end if;
