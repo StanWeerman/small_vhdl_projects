@@ -28,8 +28,10 @@ begin
 
     process (clk) is
         begin
-            if (reg_wr) then
-                regs(r0a) <= wd;
+            if (rising_edge(clk)) then
+                if (reg_wr) then
+                    regs(r0a) <= wd;
+                end if;
             end if;
         end process;
 

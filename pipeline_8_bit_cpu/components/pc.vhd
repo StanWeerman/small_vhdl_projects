@@ -17,10 +17,12 @@ begin
         begin
             if (rstb = '0') then
                 pco <= 0;
-            elsif (en) then
-                if (jmp) then pco <= jmp_address;
-                elsif (branch) then pco <= jmp_address;
-                else pco <= pco + 1;
+            elsif (rising_edge(clk)) then
+                if (en) then
+                    if (jmp) then pco <= jmp_address;
+                    elsif (branch) then pco <= jmp_address;
+                    else pco <= pco + 1;
+                    end if;
                 end if;
             end if;
         end process;

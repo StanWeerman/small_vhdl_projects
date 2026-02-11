@@ -16,14 +16,14 @@ end ex_me_pipe;
 
 architecture pipe of ex_me_pipe is
 begin
-    process (clk) is
+    process (clk, rstb) is
     begin
         if(rstb='0') then
             me_reg_wr <= '0';
             me_memtoreg <= '0';
             me_m_rd <= '0';
             me_m_wr <= '0';
-        elsif(rising_edge(Clk)) then
+        elsif(rising_edge(clk)) then
             me_reg_wr <= ex_reg_wr;
             me_memtoreg <= ex_memtoreg;
             me_m_rd <= ex_m_rd;

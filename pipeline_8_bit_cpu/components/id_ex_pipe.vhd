@@ -28,14 +28,14 @@ begin
     c_and <= id_control(2);
     c_or <= not id_control(2);
 
-    process (clk) is
+    process (clk, rstb) is
     begin
         if(rstb='0') then
             ex_reg_wr <= '0';
             ex_memtoreg <= '0';
             ex_m_rd <= '0';
             ex_m_wr <= '0';
-        elsif(rising_edge(Clk)) then
+        elsif(rising_edge(clk)) then
             ex_reg_wr <= id_reg_wr;
             ex_memtoreg <= id_memtoreg;
             ex_m_rd <= id_m_rd;

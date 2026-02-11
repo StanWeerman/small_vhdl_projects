@@ -16,11 +16,12 @@ end if_id_pipe;
 
 architecture pipe of if_id_pipe is
 begin
-    process (clk) is
+    process (clk, rstb) is
     begin
         if(rstb='0') then
             wb_out <= '0';
-        elsif(rising_edge(Clk)) then
+            id_control <= (others => '0');
+        elsif(rising_edge(clk)) then
             wb_out <= wb_in;
             id_control <= if_instruction(6 downto 0);
             id_r0a <= to_integer(unsigned(if_instruction(15 downto 13)));

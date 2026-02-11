@@ -1,8 +1,8 @@
 clk
 rst
 en
-instruction
-pco
+if_instruction
+id_pco
 reg_0_data
 reg_1_data
 reg_2_data
@@ -16,3 +16,4 @@ regs[5][7:0]
 regs[6][7:0]
 regs[7][7:0]
 mem[1][7:0]
+mem[1][15:0]

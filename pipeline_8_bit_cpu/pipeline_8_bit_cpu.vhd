@@ -63,7 +63,7 @@ begin
 
 -- IF work
     -- PC inst
-    pc_inst: entity work.pc
+    pc: entity work.pc
     port map(
         clk => clk,
         rstb => not rst,
@@ -74,9 +74,11 @@ begin
         pco => id_pco
     );
     -- Instruction Memory inst
-    memory_inst: entity work.memory
+    ins_mem: entity work.memory
      generic map(
-        data_width => 16
+        data_width => 16,
+        ROM_FILE => "/Users/stanweerman/Documents/verilog_projects/small_verilog_projects/8_bit_cpu/assembler/tests/build/add",
+        LOAD => 1
     )
      port map(
         clk => clk,
@@ -88,7 +90,7 @@ begin
     );
 
 -- IF/ID pipe inst
-    if_id_pipe_inst: entity work.if_id_pipe
+    if_id_pipe: entity work.if_id_pipe
      port map(
         clk => clk,
         rstb => not rst,
@@ -115,26 +117,26 @@ begin
     id_memtoreg <= not id_alu;
 
     -- Reg file inst
-    reg_file_inst: entity work.reg_file
+    reg_file: entity work.reg_file
     generic map(DEBUG => 1)
     port map(
         clk => clk,
         reg_wr => wb_reg_wr,
-        r0a => id_r0a,
+        r0a => wb_r0a,
         r1a => id_r1a,
         r2a => id_r2a,
         r0d => id_r0d,
-        r1d => id_r0d,
-        r2d => id_r0d,
+        r1d => id_r1d,
+        r2d => id_r2d,
         wd => wb_wd
     );
 
-    id_branch_success <= id_branch and id_beq_bne_b xor '0' when (unsigned(reg_0_data) /= 0) else '1';
-    id_branch_address <= to_integer(unsigned(reg_1_data & reg_2_data));
+    id_branch_success <= id_branch and id_beq_bne_b xor '0' when (unsigned(id_r0d) /= 0) else '1';
+    id_branch_address <= to_integer(unsigned(id_r1d & id_r2d));
 
 
 -- ID/EX pipe inst
-    id_ex_pipe_inst: entity work.id_ex_pipe
+    id_ex_pipe: entity work.id_ex_pipe
     port map(
         clk => clk,
         rstb => not rst,
@@ -173,7 +175,7 @@ begin
 
 -- EX work
     -- ALU inst
-    alu_inst: entity work.alu
+    alu: entity work.alu
      port map(
         a => ex_r1d,
         b => ex_r2d,
@@ -190,7 +192,7 @@ begin
     ex_wd <= std_logic_vector(to_unsigned(ex_imm, ex_wd'length)) when ex_mov else alu_output;
 
 -- EX/ME pipe inst
-    ex_me_pipe_inst: entity work.ex_me_pipe
+    ex_me_pipe: entity work.ex_me_pipe
     port map(
         clk => clk,
         rstb => not rst,
@@ -218,7 +220,7 @@ begin
 
 -- ME work
     me_wd <= me_r0d when not me_memtoreg else m_d_out when me_m_rd else me_r0d;
-    ram_inst: entity work.memory
+    ram: entity work.memory
      generic map(
         data_width => 8
     )
@@ -232,7 +234,7 @@ begin
     );
 
 -- ME/WB pipe inst
-    me_wb_pipe_inst: entity work.me_wb_pipe
+    me_wb_pipe: entity work.me_wb_pipe
     port map(
         clk => clk,
         rstb => not rst,

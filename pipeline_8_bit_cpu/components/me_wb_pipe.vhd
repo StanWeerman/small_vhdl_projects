@@ -16,12 +16,12 @@ end me_wb_pipe;
 
 architecture pipe of me_wb_pipe is
 begin
-    process (clk) is
+    process (clk, rstb) is
     begin
         if(rstb='0') then
             wb_reg_wr <= '0';
-        elsif(rising_edge(Clk)) then
-            wb_reg_wr <= wb_reg_wr;
+        elsif(rising_edge(clk)) then
+            wb_reg_wr <= me_reg_wr;
             wb_r0a <= me_r0a;
             wb_r0d <= me_r0d;
         end if;
