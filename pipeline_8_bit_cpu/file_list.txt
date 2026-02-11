@@ -1,0 +1,8 @@
+components/pc.vhd
+components/reg_file.vhd
+components/alu.vhd
+components/if_id_pipe.vhd
+pipeline_8_bit_cpu.vhd
+memory.vhd
+cpu_package.vhd
+pipeline_8_bit_cpu_tb.vhd

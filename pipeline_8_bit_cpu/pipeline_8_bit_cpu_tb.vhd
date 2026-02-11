@@ -30,9 +30,9 @@ architecture pipeline_8_bit_cpu_tb of pipeline_8_bit_cpu_tb is
     signal start_address : integer range 0 to 65535 := 0;
     signal ins_address : integer range 0 to 65535;
 begin
-    --cpu : work.cpu_package.cpu port map (clk => clk, rst => rst, en => en, instruction => instruction, d_in => cpu_d_in, d_out => cpu_d_out, m_rd => m_rd, m_wr => m_wr, pco => pco, a => cpu_a);
-    --ins_mem : work.cpu_package.memory generic map (data_width => 16) port map (clk => ins_clk, rd => '1', wr => ins_mem_wr, a => ins_address, d_in => ins_write_data, d_out => instruction);
-    --ram : work.cpu_package.memory port map (clk => clk, rd => m_rd, wr => m_wr, a => cpu_a, d_in => cpu_d_out, d_out => cpu_d_in);
+    cpu : work.cpu_package.cpu port map (clk => clk, rst => rst, en => en, instruction => instruction, d_in => cpu_d_in, d_out => cpu_d_out, m_rd => m_rd, m_wr => m_wr, pco => pco, a => cpu_a);
+    ins_mem : work.cpu_package.memory generic map (data_width => 16) port map (clk => ins_clk, rd => '1', wr => ins_mem_wr, a => ins_address, d_in => ins_write_data, d_out => instruction);
+    ram : work.cpu_package.memory port map (clk => clk, rd => m_rd, wr => m_wr, a => cpu_a, d_in => cpu_d_out, d_out => cpu_d_in);
 
     ins_address <= pco when ready else start_address;
     ins_clk <= clk when ready else start_clk;
