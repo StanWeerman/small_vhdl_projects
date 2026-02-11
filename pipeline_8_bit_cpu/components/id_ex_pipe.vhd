@@ -45,6 +45,9 @@ begin
             ex_r1a <= id_r1a;
             ex_r2a <= id_r2a;
             ex_imm <= id_imm;
+            ex_r0d <= id_r0d;
+            ex_r1d <= id_r1d;
+            ex_r2d <= id_r2d;
         end if;
     end process;
 

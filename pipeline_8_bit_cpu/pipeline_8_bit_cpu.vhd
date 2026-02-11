@@ -4,12 +4,10 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity cpu is
     port (
-        clk, rst, en : in std_logic;
-        instruction : in std_logic_vector(15 downto 0);
-        d_in : in std_logic_vector(7 downto 0);
-        d_out : out std_logic_vector(7 downto 0);
-        me_m_rd, me_m_wr : out std_logic;
-        a, pco : out integer range 0 to 65535
+        clk, rst, en : in std_logic
+        --instruction : in std_logic_vector(15 downto 0);
+        --d_in : in std_logic_vector(7 downto 0);
+        --d_out : out std_logic_vector(7 downto 0);
     );
 end cpu;
 
@@ -17,8 +15,8 @@ architecture cpu of cpu is
     -- Control signals
     signal id_control: std_logic_vector(6 downto 0);
 
-    -- PC signals
-    signal branch_success: std_logic;
+    -- IF signals
+    signal if_instruction: std_logic_vector(15 downto 0);
 
     -- ID signals
     signal id_r0a, id_r1a, id_r2a : natural range 0 to 7;
@@ -27,10 +25,13 @@ architecture cpu of cpu is
     signal id_reg_wr : std_logic;
     signal id_mov, id_jump, id_branch, id_beq_bne_b, id_alu, id_memtoreg : std_logic;
     signal id_m_rd, id_m_wr : std_logic;
+        -- PC signals
+        signal id_branch_success: std_logic;
+        signal id_branch_address, id_pco: natural range 0 to 65535;
 
     -- EX signals
     signal ex_r0a, ex_r1a, ex_r2a : natural range 0 to 7;
-    signal ex_r0d, ex_r1d, ex_r2d  : std_logic_vector(7 downto 0);
+    signal ex_wd, ex_r0d, ex_r1d, ex_r2d  : std_logic_vector(7 downto 0);
     signal ex_imm : integer range 0 to 255;
     signal ex_reg_wr : std_logic;
     signal ex_mov, ex_memtoreg : std_logic;
@@ -39,15 +40,15 @@ architecture cpu of cpu is
 
     -- ME signals
     signal me_r0a, me_r1a, me_r2a : natural range 0 to 7;
-    signal me_r0d, me_r1d, me_r2d  : std_logic_vector(7 downto 0);
-    signal me_imm : integer range 0 to 255;
+    signal me_wd, me_r0d, me_r1d, me_r2d  : std_logic_vector(7 downto 0);
     signal me_reg_wr, me_memtoreg : std_logic;
-    --signal me_m_rd, me_m_wr : std_logic;
+    signal me_a : natural range 0 to 65535;
+    signal me_d_in, m_d_out: std_logic_vector(7 downto 0);
+    signal me_m_rd, me_m_wr : std_logic;
 
     -- WB signals
     signal wb_r0a, wb_r1a, wb_r2a : natural range 0 to 7;
-    signal wb_r0d, wb_r1d, wb_r2d, wb_wd : std_logic_vector(7 downto 0);
-    signal wb_imm : integer range 0 to 255;
+    signal wb_rd, wb_r0d, wb_r1d, wb_r2d, wb_wd : std_logic_vector(7 downto 0);
     signal wb_reg_wr : std_logic;
 
     -- ALU signals
@@ -61,10 +62,6 @@ architecture cpu of cpu is
 begin
 
 -- IF work
-
-    branch_success <= id_branch and id_beq_bne_b xor '0' when (unsigned(reg_0_data) /= 0) else '1';
-    a <= to_integer(unsigned(reg_1_data & reg_2_data));
-
     -- PC inst
     pc_inst: entity work.pc
     port map(
@@ -73,8 +70,21 @@ begin
         en => en,
         jmp => id_jump,
         branch => id_branch,
-        jmp_address => a,
-        pco => pco
+        jmp_address => id_branch_address,
+        pco => id_pco
+    );
+    -- Instruction Memory inst
+    memory_inst: entity work.memory
+     generic map(
+        data_width => 16
+    )
+     port map(
+        clk => clk,
+        rd => '1',
+        wr => '0',
+        a => id_pco,
+        d_in => (others => '0'),
+        d_out => if_instruction
     );
 
 -- IF/ID pipe inst
@@ -84,7 +94,7 @@ begin
         rstb => not rst,
         wb_in => '0',
         wb_out => open,
-        instruction_in => instruction,
+        if_instruction => if_instruction,
         id_control => id_control,
         id_r0a => id_r0a,
         id_r1a => id_r1a,
@@ -94,7 +104,6 @@ begin
 
 -- ID work
     -- Control bits
-    id_control <= instruction(6 downto 0);
     id_mov <= id_control(1);
     id_jump <= '0' when (id_alu or id_branch) else id_control(4);
     id_branch <= '0' when id_alu else id_control(3);
@@ -119,6 +128,10 @@ begin
         r2d => id_r0d,
         wd => wb_wd
     );
+
+    id_branch_success <= id_branch and id_beq_bne_b xor '0' when (unsigned(reg_0_data) /= 0) else '1';
+    id_branch_address <= to_integer(unsigned(reg_1_data & reg_2_data));
+
 
 -- ID/EX pipe inst
     id_ex_pipe_inst: entity work.id_ex_pipe
@@ -174,9 +187,62 @@ begin
         c_and => c_and,
         c_or => c_or
     );
-    ex_wd <= ex_imm when mov else alu_output;
+    ex_wd <= std_logic_vector(to_unsigned(ex_imm, ex_wd'length)) when ex_mov else alu_output;
 
 -- EX/ME pipe inst
+    ex_me_pipe_inst: entity work.ex_me_pipe
+    port map(
+        clk => clk,
+        rstb => not rst,
+        ex_reg_wr => ex_reg_wr,
+        ex_memtoreg => ex_memtoreg,
+        ex_m_rd => ex_m_rd,
+        ex_m_wr => ex_m_wr,
+        me_reg_wr => me_reg_wr,
+        me_memtoreg => me_memtoreg,
+        me_m_rd => me_m_rd,
+        me_m_wr => me_m_wr,
+        ex_r0a => ex_r0a,
+        ex_r1a => ex_r1a,
+        ex_r2a => ex_r2a,
+        ex_r0d => ex_wd,
+        ex_r1d => ex_r1d,
+        ex_r2d => ex_r2d,
+        me_r0a => me_r0a,
+        me_r1a => me_r1a,
+        me_r2a => me_r2a,
+        me_r0d => me_r0d,
+        me_r1d => me_r1d,
+        me_r2d => me_r2d
+    );
 
-    d_out <= write_data;
+-- ME work
+    me_wd <= me_r0d when not me_memtoreg else m_d_out when me_m_rd else me_r0d;
+    ram_inst: entity work.memory
+     generic map(
+        data_width => 8
+    )
+     port map(
+        clk => clk,
+        rd => me_m_rd,
+        wr => me_m_wr,
+        a =>me_a,
+        d_in => me_r0d,
+        d_out => m_d_out
+    );
+
+-- ME/WB pipe inst
+    me_wb_pipe_inst: entity work.me_wb_pipe
+    port map(
+        clk => clk,
+        rstb => not rst,
+        me_reg_wr => me_reg_wr,
+        wb_reg_wr => wb_reg_wr,
+        me_r0a => me_r0a,
+        me_r0d => me_r0d,
+        wb_r0a => wb_r0a,
+        wb_r0d => wb_r0d
+    );
+-- WB work
+    wb_wd <= wb_r0d;
 end;

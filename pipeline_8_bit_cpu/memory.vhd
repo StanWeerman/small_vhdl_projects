@@ -8,7 +8,7 @@ entity memory is
     );
     port (
         clk, rd, wr : in std_logic;
-        a : in integer range 0 to 65535;
+        a : in natural range 0 to 65535;
         d_in : in std_logic_vector(data_width-1 downto 0);
         d_out : out std_logic_vector(data_width-1 downto 0)
     );

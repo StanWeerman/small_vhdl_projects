@@ -2,7 +2,9 @@ components/pc.vhd
 components/reg_file.vhd
 components/alu.vhd
 components/if_id_pipe.vhd
-pipeline_8_bit_cpu.vhd
+components/id_ex_pipe.vhd
+components/ex_me_pipe.vhd
+components/me_wb_pipe.vhd
 memory.vhd
-cpu_package.vhd
+pipeline_8_bit_cpu.vhd
 pipeline_8_bit_cpu_tb.vhd
