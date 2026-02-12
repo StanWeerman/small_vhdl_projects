@@ -4,7 +4,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity me_wb_pipe is
     port (
-        clk, rstb: in std_logic;
+        clk, rstb, en: in std_logic;
         me_reg_wr: in std_logic;
         wb_reg_wr: out std_logic;
         me_r0a: in natural range 0 to 7;
@@ -21,9 +21,11 @@ begin
         if(rstb='0') then
             wb_reg_wr <= '0';
         elsif(rising_edge(clk)) then
-            wb_reg_wr <= me_reg_wr;
-            wb_r0a <= me_r0a;
-            wb_r0d <= me_r0d;
+            if (en) then
+                wb_reg_wr <= me_reg_wr;
+                wb_r0a <= me_r0a;
+                wb_r0d <= me_r0d;
+            end if;
         end if;
     end process;
 

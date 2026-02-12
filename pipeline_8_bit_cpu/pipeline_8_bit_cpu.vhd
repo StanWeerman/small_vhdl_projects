@@ -25,6 +25,7 @@ architecture cpu of cpu is
     signal id_reg_wr : std_logic;
     signal id_mov, id_jump, id_branch, id_beq_bne_b, id_alu, id_memtoreg : std_logic;
     signal id_m_rd, id_m_wr : std_logic;
+    signal id_wff : std_logic;
         -- PC signals
         signal id_branch_success: std_logic;
         signal id_branch_address, id_pco: natural range 0 to 65535;
@@ -69,7 +70,7 @@ begin
         rstb => not rst,
         en => en,
         jmp => id_jump,
-        branch => id_branch,
+        branch => id_branch_success,
         jmp_address => id_branch_address,
         pco => id_pco
     );
@@ -94,8 +95,8 @@ begin
      port map(
         clk => clk,
         rstb => not rst,
-        wb_in => '0',
-        wb_out => open,
+        wff_in => id_jump or id_branch_success,
+        id_wff => id_wff,
         if_instruction => if_instruction,
         id_control => id_control,
         id_r0a => id_r0a,
@@ -106,15 +107,29 @@ begin
 
 -- ID work
     -- Control bits
-    id_mov <= id_control(1);
-    id_jump <= '0' when (id_alu or id_branch) else id_control(4);
-    id_branch <= '0' when id_alu else id_control(3);
-    id_beq_bne_b <= id_control(4);
-    id_m_rd <= '0' when id_alu else id_control(2);
-    id_m_wr <= '0' when id_alu else id_control(1);
-    id_alu <= id_control(0);
-    id_reg_wr <= id_alu or id_m_rd;
-    id_memtoreg <= not id_alu;
+    control: process(all) is
+        variable branch_success : std_logic;
+    begin
+        if id_wff then
+            id_reg_wr <= '0';
+            id_m_rd <= '0';
+            id_m_wr <= '0';
+        else
+            id_reg_wr <= id_alu or id_m_rd;
+            id_m_rd <= '0' when id_alu else id_control(2);
+            id_m_wr <= '0' when id_alu else id_control(1);
+        end if;
+        id_mov <= id_control(1);
+        id_jump <= '0' when (id_alu or id_branch) else id_control(4);
+        id_branch <= '0' when id_alu else id_control(3);
+        id_beq_bne_b <= id_control(4);
+        id_alu <= id_control(0);
+        id_memtoreg <= not id_alu;
+
+        branch_success := id_beq_bne_b xor '0' when (unsigned(id_r0d) /= 0) else '1';
+        id_branch_success <= id_branch and branch_success;
+        id_branch_address <= to_integer(unsigned(id_r1d & id_r2d));
+    end process;
 
     -- Reg file inst
     reg_file: entity work.reg_file
@@ -130,9 +145,6 @@ begin
         r2d => id_r2d,
         wd => wb_wd
     );
-
-    id_branch_success <= id_branch and id_beq_bne_b xor '0' when (unsigned(id_r0d) /= 0) else '1';
-    id_branch_address <= to_integer(unsigned(id_r1d & id_r2d));
 
 
 -- ID/EX pipe inst

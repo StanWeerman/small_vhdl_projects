@@ -4,7 +4,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity id_ex_pipe is
     port (
-        clk, rstb: in std_logic;
+        clk, rstb, en: in std_logic;
         id_control: in std_logic_vector(6 downto 0);
         id_reg_wr, id_mov, id_memtoreg, id_m_rd, id_m_wr: in std_logic;
         ex_reg_wr, ex_mov, ex_memtoreg, ex_m_rd, ex_m_wr: out std_logic;
@@ -32,22 +32,23 @@ begin
     begin
         if(rstb='0') then
             ex_reg_wr <= '0';
-            ex_memtoreg <= '0';
             ex_m_rd <= '0';
             ex_m_wr <= '0';
         elsif(rising_edge(clk)) then
-            ex_reg_wr <= id_reg_wr;
-            ex_memtoreg <= id_memtoreg;
-            ex_m_rd <= id_m_rd;
-            ex_m_wr <= id_m_wr;
-            ex_mov <= id_mov;
-            ex_r0a <= id_r0a;
-            ex_r1a <= id_r1a;
-            ex_r2a <= id_r2a;
-            ex_imm <= id_imm;
-            ex_r0d <= id_r0d;
-            ex_r1d <= id_r1d;
-            ex_r2d <= id_r2d;
+            if (en) then
+                ex_reg_wr <= id_reg_wr;
+                ex_memtoreg <= id_memtoreg;
+                ex_m_rd <= id_m_rd;
+                ex_m_wr <= id_m_wr;
+                ex_mov <= id_mov;
+                ex_r0a <= id_r0a;
+                ex_r1a <= id_r1a;
+                ex_r2a <= id_r2a;
+                ex_imm <= id_imm;
+                ex_r0d <= id_r0d;
+                ex_r1d <= id_r1d;
+                ex_r2d <= id_r2d;
+            end if;
         end if;
     end process;
 
