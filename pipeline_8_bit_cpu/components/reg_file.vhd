@@ -28,7 +28,8 @@ begin
 
     process (clk) is
         begin
-            if (rising_edge(clk)) then
+            -- Falling edge for internal forwarding
+            if (falling_edge(clk)) then
                 if (reg_wr) then
                     regs(r0a) <= wd;
                 end if;

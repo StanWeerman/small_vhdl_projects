@@ -1,6 +1,7 @@
 components/pc.vhd
 components/reg_file.vhd
 components/alu.vhd
+components/hdu.vhd
 components/if_id_pipe.vhd
 components/id_ex_pipe.vhd
 components/ex_me_pipe.vhd

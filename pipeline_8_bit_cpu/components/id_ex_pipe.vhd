@@ -20,14 +20,6 @@ end id_ex_pipe;
 
 architecture pipe of id_ex_pipe is
 begin
-    -- Control bits
-    sign <= id_control(2);
-    add <= not id_control(2);
-    sub <= id_control(2);
-    and_or <= id_control(3);
-    c_and <= id_control(2);
-    c_or <= not id_control(2);
-
     process (clk, rstb) is
     begin
         if(rstb='0') then
@@ -48,6 +40,14 @@ begin
                 ex_r0d <= id_r0d;
                 ex_r1d <= id_r1d;
                 ex_r2d <= id_r2d;
+
+                -- ALU Control
+                sign <= id_control(2);
+                add <= not id_control(2);
+                sub <= id_control(2);
+                and_or <= id_control(3);
+                c_and <= id_control(2);
+                c_or <= not id_control(2);
             end if;
         end if;
     end process;

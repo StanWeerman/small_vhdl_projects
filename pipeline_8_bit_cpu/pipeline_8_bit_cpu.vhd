@@ -12,8 +12,8 @@ entity cpu is
 end cpu;
 
 architecture cpu of cpu is
-    -- Control signals
-    signal id_control: std_logic_vector(6 downto 0);
+    -- HDU signals
+    signal stall_hdu: std_logic;
 
     -- IF signals
     signal if_instruction: std_logic_vector(15 downto 0);
@@ -23,6 +23,7 @@ architecture cpu of cpu is
     signal id_r0d, id_r1d, id_r2d : std_logic_vector(7 downto 0);
     signal id_imm : integer range 0 to 255;
     signal id_reg_wr : std_logic;
+    signal id_control: std_logic_vector(6 downto 0);
     signal id_mov, id_jump, id_branch, id_beq_bne_b, id_alu, id_memtoreg : std_logic;
     signal id_m_rd, id_m_wr : std_logic;
     signal id_wff : std_logic;
@@ -68,7 +69,7 @@ begin
     port map(
         clk => clk,
         rstb => not rst,
-        en => en,
+        en => not stall_hdu,
         jmp => id_jump,
         branch => id_branch_success,
         jmp_address => id_branch_address,
@@ -95,6 +96,7 @@ begin
      port map(
         clk => clk,
         rstb => not rst,
+        en => not stall_hdu,
         wff_in => id_jump or id_branch_success,
         id_wff => id_wff,
         if_instruction => if_instruction,
@@ -110,7 +112,7 @@ begin
     control: process(all) is
         variable branch_success : std_logic;
     begin
-        if id_wff then
+        if id_wff or stall_hdu then
             id_reg_wr <= '0';
             id_m_rd <= '0';
             id_m_wr <= '0';
@@ -146,12 +148,26 @@ begin
         wd => wb_wd
     );
 
+    -- HDU inst
+    hdu: entity work.hdu
+     port map(
+        id_r0a => id_r0a,
+        id_r1a => id_r1a,
+        id_r2a => id_r2a,
+        ex_r0a => ex_r0a,
+        me_r0a => me_r0a,
+        ex_reg_wr => ex_reg_wr,
+        me_reg_wr => me_reg_wr,
+        stall_hdu => stall_hdu
+    );
+
 
 -- ID/EX pipe inst
     id_ex_pipe: entity work.id_ex_pipe
     port map(
         clk => clk,
         rstb => not rst,
+        en => '1',
         id_control => id_control,
         id_reg_wr => id_reg_wr,
         id_mov => id_mov,
@@ -201,13 +217,14 @@ begin
         c_and => c_and,
         c_or => c_or
     );
-    ex_wd <= std_logic_vector(to_unsigned(ex_imm, ex_wd'length)) when ex_mov else alu_output;
+    ex_wd <= ex_r0d when ex_memtoreg else std_logic_vector(to_unsigned(ex_imm, ex_wd'length)) when ex_mov else alu_output;
 
 -- EX/ME pipe inst
     ex_me_pipe: entity work.ex_me_pipe
     port map(
         clk => clk,
         rstb => not rst,
+        en => '1',
         ex_reg_wr => ex_reg_wr,
         ex_memtoreg => ex_memtoreg,
         ex_m_rd => ex_m_rd,
@@ -231,7 +248,8 @@ begin
     );
 
 -- ME work
-    me_wd <= me_r0d when not me_memtoreg else m_d_out when me_m_rd else me_r0d;
+    me_wd <= me_r0d when not me_memtoreg else m_d_out;
+    me_a <= to_integer(unsigned(me_r1d & me_r2d));
     ram: entity work.memory
      generic map(
         data_width => 8
@@ -240,7 +258,7 @@ begin
         clk => clk,
         rd => me_m_rd,
         wr => me_m_wr,
-        a =>me_a,
+        a => me_a,
         d_in => me_r0d,
         d_out => m_d_out
     );
@@ -250,10 +268,11 @@ begin
     port map(
         clk => clk,
         rstb => not rst,
+        en => '1',
         me_reg_wr => me_reg_wr,
         wb_reg_wr => wb_reg_wr,
         me_r0a => me_r0a,
-        me_r0d => me_r0d,
+        me_r0d => me_wd,
         wb_r0a => wb_r0a,
         wb_r0d => wb_r0d
     );
