@@ -6,9 +6,11 @@ entity id_ex_pipe is
     port (
         clk, rstb, en: in std_logic;
         id_control: in std_logic_vector(6 downto 0);
-        id_reg_wr, id_mov, id_memtoreg, id_m_rd, id_m_wr: in std_logic;
-        ex_reg_wr, ex_mov, ex_memtoreg, ex_m_rd, ex_m_wr: out std_logic;
+        id_reg_wr, id_mov, id_memtoreg, id_m_rd, id_m_wr, id_alu: in std_logic;
+        ex_reg_wr, ex_mov, ex_memtoreg, ex_m_rd, ex_m_wr, ex_alu: out std_logic;
         sign, add, sub, and_or, c_and, c_or: out std_logic;
+        id_r0f1, id_r1f1, id_r2f1, id_r0f2, id_r1f2, id_r2f2: in std_logic;
+        ex_r0f1, ex_r1f1, ex_r2f1, ex_r0f2, ex_r1f2, ex_r2f2: out std_logic;
         id_r0a, id_r1a, id_r2a: in natural range 0 to 7;
         id_r0d, id_r1d, id_r2d: in std_logic_vector(7 downto 0);
         id_imm: in integer range 0 to 255;
@@ -33,6 +35,12 @@ begin
                 ex_m_rd <= id_m_rd;
                 ex_m_wr <= id_m_wr;
                 ex_mov <= id_mov;
+                ex_r0f1 <= id_r0f1;
+                ex_r1f1 <= id_r1f1;
+                ex_r2f1 <= id_r2f1;
+                ex_r0f2 <= id_r0f2;
+                ex_r1f2 <= id_r1f2;
+                ex_r2f2 <= id_r2f2;
                 ex_r0a <= id_r0a;
                 ex_r1a <= id_r1a;
                 ex_r2a <= id_r2a;
@@ -42,6 +50,7 @@ begin
                 ex_r2d <= id_r2d;
 
                 -- ALU Control
+                ex_alu <= id_alu;
                 sign <= id_control(2);
                 add <= not id_control(2);
                 sub <= id_control(2);
