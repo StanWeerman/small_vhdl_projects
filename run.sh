@@ -53,9 +53,15 @@ fi
 
 echo "------Start------"
 
-nvc -a $name.vhd cpu_package.vhd ${name}_tb.vhd
+if [ -f file_list.txt ]
+then
+nvc -a -f file_list.txt
+else
+    nvc -a $name.vhd ${name}_tb.vhd
+fi
+
 nvc -e ${name}_tb
-nvc -r ${name}_tb --wave=build/wave.fst
+nvc -r ${name}_tb --wave=build/wave.fst --dump-arrays
 
 if [ -f build/wave.fst ]
 then
