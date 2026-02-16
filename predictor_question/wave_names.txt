@@ -1,0 +1,10 @@
+index
+branch
+predicted_a
+actual
+global_b
+predicted_b
+actual
+
+bpb_a
+bpb_b
