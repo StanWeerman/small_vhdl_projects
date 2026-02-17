@@ -29,9 +29,10 @@ architecture predictor_question_tb of predictor_question_tb is
                             '0', '0', -- 30
                             '1', '1' -- 31
                             );
-
     signal index: natural range 0 to 17 := 0;
-    signal value: integer;
+
+    type value_list is array(0 to 8) of integer;
+    signal values: value_list := (8,9,10,11,7,20,29,30,31);
 
 begin
     predictor_inst: entity work.predictor
@@ -49,35 +50,48 @@ begin
     actual <= actuals(index);
 
     iter: process(clk) is
-    variable p_a, a_a, g_b, p_b, a_b: string(1 to 1);
-    variable total: string(1 to 12);
-    variable line: line;
+        variable p_a, a_a, g_b, p_b, a_b: string(1 to 1);
+        variable total: string(1 to 12);
+        variable line: line;
+        variable val: string(1 to 5);
     begin
         if rising_edge(clk) then
-            index <= index+1;
             branch <= branch xor '1';
+
+            if branch then write(line, string'("b2    "));
+            else write(line, string'("b1    "));
+            end if;
+
             p_a := "1" when predicted_a else "0";
             a_a := "1" when actual else "0";
             g_b := "1" when global_b else "0";
             p_b := "1" when predicted_b else "0";
             a_b := "1" when actual else "0";
-            total := p_a & "|" & a_a & "    " & g_b & "|" & p_b & "|" & p_a;
-            --write(line, p_a);
-            --write(line, string'("|"));
-            --write(line, a_a);
-            --write(line, string'("    "));
-            --write(line, g_b);
-            --write(line, string'("|"));
-            --write(line, p_b);
-            --write(line, string'("|"));
-            --write(line, a_b);
+            total := p_a & "|" & a_a & "    " & g_b & "|" & p_b & "|" & a_b;
             write(line, total);
+
+            val := "    " & to_string(index/2);
+            write(line, val);
+            write(line, string'(": "));
+            write(line, to_string(values(index/2)));
+
             writeline(output, line);
 
-            if index = 16 then
+            if index = 17 then
                 finish;
             end if;
+            index <= index+1;
         end if;
-    end process;
+    end process iter;
+
+    start: process
+        variable line: line;
+    begin
+        write(line, string'("      |A|    | B |"));
+        writeline(output, line);
+        write(line, string'("b#    p|a    g|p|a    i: v"));
+        writeline(output, line);
+        wait;
+    end process start;
 
 end predictor_question_tb;
