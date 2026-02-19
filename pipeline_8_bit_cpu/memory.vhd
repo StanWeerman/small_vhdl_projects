@@ -62,38 +62,4 @@ begin
                 end if;
             end if;
         end process;
-
-    --load_memory : if LOAD = 1 generate
-    --    input: process is
-    --        variable i_line : line;
-    --        variable o_line : line;
-    --        variable ins_1 : character;
-    --        variable ins_2 : character;
-    --        variable instruction : std_logic_vector(15 downto 0);
-    --        variable index: integer := 0;
-    --    begin
-    --        file_open(file_in, "/Users/stanweerman/Documents/verilog_projects/small_verilog_projects/8_bit_cpu/assembler/tests/build/add",  read_mode);
-    --        file_open(file_out, "build/output.txt", write_mode);
-
-    --        while not endfile(file_in) loop
-    --            read(file_in, ins_1);
-    --            read(file_in, ins_2);
-    --            instruction := std_logic_vector(to_unsigned(character'pos(ins_1), 8)) & std_logic_vector(to_unsigned(character'pos(ins_2), 8));
-    --            mem(index) <= instruction;
-    --            wait for 1 ps;
-
-    --            write(o_line, mem(index), right, 16);
-    --            writeline(file_out, o_line);
-
-    --            index := index+1;
-    --        end loop;
-
-    --        file_close(file_in);
-    --        file_close(file_out);
-
-    --        wait;
-    --    end process;
-    --end generate;
-
-
 end memory;
