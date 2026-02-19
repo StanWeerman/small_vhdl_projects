@@ -1,0 +1,16 @@
+clk
+clk_1s
+rst
+up
+down
+left
+right
+time_select
+edit_select
+edit_val
+alarm_clock_tb.h2
+alarm_clock_tb.h1
+alarm_clock_tb.m2
+alarm_clock_tb.m1
+alarm_clock_tb.s2
+alarm_clock_tb.s1
