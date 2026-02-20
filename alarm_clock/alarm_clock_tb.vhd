@@ -30,7 +30,8 @@ architecture alarm_clock_tb of alarm_clock_tb is
 begin
     alarm_clock: entity work.alarm_clock
     generic map(
-        PERIOD => 1
+        PERIOD => 1,
+        N_CLOCKS => 1
     )
     port map(
         clk => clk,

@@ -3,7 +3,11 @@ use ieee.std_logic_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 
 entity alarm_clock is
-    generic (PERIOD: integer := 50000000); -- For 100MHZ clk, switch when div_clk is 50,000,000
+    generic (
+        PERIOD: integer := 50000000;
+        N_CLOCKS: integer := 1;
+        N_ALARMS: integer := 1
+    ); -- For 100MHZ clk, switch when div_clk is 50,000,000
     port (
         clk, rst: in std_logic;
         up, down, left, right, time_switch_in: in std_logic;
@@ -21,15 +25,15 @@ architecture alarm_clock of alarm_clock is
     signal div_clk: std_logic_vector(26 downto 0);
     signal clk_1s: std_logic;
 
-    signal time_select: natural range 0 to 2;
-    signal edit_out: std_logic_vector(2 downto 0);
+    signal time_select: natural range 0 to N_CLOCKS-1;
+    signal edit_out: std_logic_vector(N_CLOCKS-1 downto 0);
     signal edit_select: natural range 0 to 5;
     signal edit_val: integer range -1 to 1;
 
-    type three_array is array (0 to 2) of natural range 0 to 2;
-    type five_array is array (0 to 2) of natural range 0 to 4;
-    type six_array is array (0 to 2) of natural range 0 to 5;
-    type ten_array is array (0 to 2) of natural range 0 to 9;
+    type three_array is array (0 to N_CLOCKS-1) of natural range 0 to 2;
+    type five_array is array (0 to N_CLOCKS-1) of natural range 0 to 4;
+    type six_array is array (0 to N_CLOCKS-1) of natural range 0 to 5;
+    type ten_array is array (0 to N_CLOCKS-1) of natural range 0 to 9;
     signal h2s: three_array;
     signal h1s: five_array;
     signal m2s, s2s: six_array;
@@ -83,7 +87,7 @@ begin
     s1 <= s1s(time_select);
 
 
-    gen_times: for i in 0 to 2 generate
+    gen_times: for i in 0 to N_CLOCKS-1 generate
         signal edit: std_logic;
     begin
         edit <= editing and '1' when time_select = i else '0';
@@ -136,7 +140,7 @@ begin
                 end if;
             end if;
             if time_switch_in then
-                if time_select = 2 then time_select <= 0;
+                if time_select = N_CLOCKS-1 then time_select <= 0;
                 else time_select <= time_select + 1;
                 end if;
             end if;
