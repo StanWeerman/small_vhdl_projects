@@ -10,14 +10,15 @@ entity alarm_clock is
     ); -- For 100MHZ clk, switch when div_clk is 50,000,000
     port (
         clk, rst: in std_logic;
-        up, down, left, right, time_switch_in: in std_logic;
+        up, down, left, right: in std_logic;
         editing: std_logic;
 
         h2: out natural range 0 to 2;
         h1: out natural range 0 to 4;
         m2, s2: out natural range 0 to 5;
         m1, s1: out natural range 0 to 9;
-        alarm_1, alarm_2: out std_logic
+        alarm_1, alarm_2: out std_logic;
+        time_select: in natural range 0 to N_CLOCKS
     );
 end alarm_clock;
 
@@ -25,7 +26,6 @@ architecture alarm_clock of alarm_clock is
     signal div_clk: std_logic_vector(26 downto 0);
     signal clk_1s: std_logic;
 
-    signal time_select: natural range 0 to N_CLOCKS-1;
     signal edit_out: std_logic_vector(N_CLOCKS-1 downto 0);
     signal edit_select: natural range 0 to 5;
     signal edit_val: integer range -1 to 1;
@@ -139,11 +139,11 @@ begin
                 else edit_select <= edit_select + 1;
                 end if;
             end if;
-            if time_switch_in then
-                if time_select = N_CLOCKS-1 then time_select <= 0;
-                else time_select <= time_select + 1;
-                end if;
-            end if;
+            --if time_switch_in then
+            --    if time_select = N_CLOCKS-1 then time_select <= 0;
+            --    else time_select <= time_select + 1;
+            --    end if;
+            --end if;
             if up then edit_val <= 1;
             end if;
             if down then edit_val <= -1;

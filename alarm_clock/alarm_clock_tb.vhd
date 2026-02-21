@@ -18,6 +18,8 @@ architecture alarm_clock_tb of alarm_clock_tb is
 
     signal up, down, left, right, edit_switch, center: std_logic := '0';
 
+    signal time_select: natural range 0 to 0;
+
     procedure press_button (
         signal button : out std_logic
         ) is
@@ -47,7 +49,8 @@ begin
         m1 => m1,
         s1 => s1,
         m2 => m2,
-        s2 => s2
+        s2 => s2,
+        time_select => 0
     );
 
     clk <= not clk after 1 ps;
