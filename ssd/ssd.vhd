@@ -35,11 +35,11 @@ begin
 
     select_input: process(all) begin
         ssd <= (others => '-');
-        an <= (others => '0');
+        an <= (others => '1');
         for index in 0 to SSD_NUM-1 loop
             if to_integer(unsigned(ssd_clk)) = index then
                 ssd <= input((index+1)*4-1 downto (index+1)*4-4);
-                an(index) <= '1';
+                an(index) <= '0';
             end if;
         end loop;
     end process select_input;
