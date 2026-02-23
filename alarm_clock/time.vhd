@@ -67,7 +67,6 @@ begin
                 s2 <= s2_edit;
                 m1 <= m1_edit;
                 s1 <= s1_edit;
-                report to_string(h1_edit);
             end if;
         end if;
     end process inc_clock;

@@ -1,4 +1,5 @@
 time.vhd
+alarm.vhd
 alarm_clock.vhd
 ssd.vhd
 alarm_clock_tb.vhd

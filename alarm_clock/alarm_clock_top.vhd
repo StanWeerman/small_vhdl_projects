@@ -12,12 +12,12 @@ entity alarm_clock_top is
         LED: out std_logic_vector(15 downto 0);
         ca: out std_logic_vector(7 downto 0);
         an: out std_logic_vector(7 downto 0);
-        LED16_R: out  std_logic;
-        LED16_G: out  std_logic;
-        LED16_B: out  std_logic;
-        LED17_R: out  std_logic;
-        LED17_G: out  std_logic;
-        LED17_B: out  std_logic
+        --LED16_R: out  std_logic;
+        --LED16_G: out  std_logic;
+        --LED16_B: out  std_logic;
+        --LED17_R: out  std_logic;
+        --LED17_G: out  std_logic;
+        --LED17_B: out  std_logic
         --micClk: out std_logic;
         --micLRSel: out std_logic;
         --micData: in std_logic;
@@ -37,8 +37,16 @@ architecture alarm_clock_top of alarm_clock_top is
 
     -- Button Handling
     signal btns_debounce, btns_fall: std_logic_vector(4 downto 0);
+    signal time_select: natural range 0 to 3;
+    signal alarm_select: natural range 0 to 3;
+    signal editing, aediting: std_logic;
 begin
     LED <= SW;
+    time_select <= to_integer(unsigned(sw(3 downto 2)));
+    alarm_select <= to_integer(unsigned(sw(5 downto 4)));
+    editing <= sw(0);
+    aediting <= sw(1);
+    LED16_R <= editing;
 
     -- Instantiate Debouncer
     debouncer_inst: entity work.debouncer
@@ -66,8 +74,9 @@ begin
     -- Instantiate Alarm Clock
     alarm_clock: entity work.alarm_clock
     generic map(
-        PERIOD => 1,
-        N_CLOCKS => 4
+        PERIOD => 100000000,
+        N_CLOCKS => 4,
+        N_ALARMS => 4
     )
     port map(
         clk => CLK100MHZ,
@@ -76,14 +85,16 @@ begin
         down => btns_fall(1),
         left => btns_fall(2),
         right => btns_fall(3),
-        editing => sw(0),
+        editing => editing,
+        aediting => aediting,
         h1 => h1,
         h2 => h2,
         m1 => m1,
         s1 => s1,
         m2 => m2,
         s2 => s2,
-        time_select => to_integer(unsigned(sw(2 downto 1)))
+        time_select => time_select,
+        alarm_select => alarm_select
     );
 
     --Instantiate SSD
@@ -97,7 +108,7 @@ begin
         rst => BtnC,
         ca => ca,
         an => an,
-        input => X"00" & std_logic_vector(to_unsigned(h2, 4) & to_unsigned(h1, 4) & to_unsigned(m2, 4) & to_unsigned(m1, 4) & to_unsigned(s2, 4) & to_unsigned(s1, 4))
+        input => std_logic_vector(to_unsigned(time_select, 4) & "000" & editing & to_unsigned(h2, 4) & to_unsigned(h1, 4) & to_unsigned(m2, 4) & to_unsigned(m1, 4) & to_unsigned(s2, 4) & to_unsigned(s1, 4))
     );
 
 end alarm_clock_top;

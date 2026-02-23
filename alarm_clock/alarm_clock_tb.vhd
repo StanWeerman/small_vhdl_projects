@@ -16,9 +16,10 @@ architecture alarm_clock_tb of alarm_clock_tb is
     signal m2, s2: natural range 0 to 5;
     signal m1, s1: natural range 0 to 9;
 
-    signal up, down, left, right, edit_switch, center: std_logic := '0';
+    signal up, down, left, right, aedit_switch, edit_switch, center: std_logic := '0';
 
-    signal time_select: natural range 0 to 0;
+    signal time_select: natural range 0 to 1 := 0;
+    signal alarm_select: natural range 0 to 3 := 0;
 
     procedure press_button (
         signal button : out std_logic
@@ -33,7 +34,8 @@ begin
     alarm_clock: entity work.alarm_clock
     generic map(
         PERIOD => 1,
-        N_CLOCKS => 1
+        N_CLOCKS => 2,
+        N_ALARMS => 4
     )
     port map(
         clk => clk,
@@ -43,14 +45,15 @@ begin
         left => left,
         right => right,
         editing => edit_switch,
-        time_switch_in => center,
+        aediting => aedit_switch,
         h1 => h1,
         h2 => h2,
         m1 => m1,
         s1 => s1,
         m2 => m2,
         s2 => s2,
-        time_select => 0
+        time_select => time_select,
+        alarm_select => alarm_select
     );
 
     clk <= not clk after 1 ps;
@@ -66,11 +69,12 @@ begin
         press_button(up);
         press_button(up);
 
-
         edit_switch <= '0';
 
+
         wait for 10 ns;
-        press_button(center);
+        time_select <= 1;
+        alarm_select <= 2;
 
         wait for 100 ns;
         finish;
