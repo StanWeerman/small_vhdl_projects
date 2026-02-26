@@ -63,7 +63,9 @@ begin
                     clk_count <= clk_count + 1;
                     if clk_count = CLKS-1 then
                         byte(index) <= bit_in_rr;
-                        index <= index + 1;
+                        if index /= 7 then
+                            index <= index + 1;
+                        end if;
                         clk_count <= 0;
                     end if;
 
@@ -74,6 +76,7 @@ begin
                     end if;
                 when STOP =>
                     -- RTL
+                    clk_count <= clk_count + 1;
                     if clk_count = CLKS-1 then
                         done <= '1';
                         clk_count <= 0;
