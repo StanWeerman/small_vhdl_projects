@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use std.env.finish;
 use IEEE.NUMERIC_STD.ALL;
+use IEEE.MATH_REAL.ALL;
 
 
 entity uart_tb is
@@ -20,21 +21,22 @@ architecture uart_tb of uart_tb is
     signal tx_bit, tx_done, tx_go: std_logic;
     signal tx_byte: std_logic_vector(7 downto 0);
 
-    procedure UART_WRITE_BYTE (
-        data_in: in  std_logic_vector(7 downto 0);
-        signal bit: out std_logic) is
-      begin
-        bit <= '0';
-        wait for PERIOD;
+    procedure test_byte (
+        constant byte: in std_logic_vector(7 downto 0);
+        signal byte_out: out std_logic_vector(7 downto 0);
+        signal go: out std_logic
+    ) is
+        begin
+            wait until rising_edge(clk);
+            wait until rising_edge(clk);
+            go   <= '1';
+            byte_out <= byte;
+            wait until rising_edge(clk);
+            go   <= '0';
+            wait until tx_done = '1';
 
-        for index in 0 to 7 loop
-          bit <= data_in(index);
-          wait for PERIOD;
-        end loop;
-
-        bit <= '1';
-        wait for PERIOD;
-    end procedure UART_WRITE_BYTE;
+            assert rx_byte = tx_byte report "Incorrect Byte, expected <" &  to_hex_string(tx_byte) & ">, received <" & to_hex_string(rx_byte) & ">";
+    end procedure test_byte;
 begin
     clk <= not clk after 50 ns;
 
@@ -48,6 +50,8 @@ begin
         done => rx_done,
         byte => rx_byte
     );
+
+    rx_bit <= tx_bit;
 
     uart_tx: entity work.uart_tx
      generic map(
@@ -69,37 +73,28 @@ begin
     --end process setup;
 
     testing: process is
+        variable seed1, seed2 : integer := 999;
+        variable r : real;
+        variable random_byte : std_logic_vector(7 downto 0);
       begin
 
-        -- Tell the UART to send a command.
-        wait until rising_edge(clk);
-        wait until rising_edge(clk);
-        tx_go   <= '1';
-        tx_byte <= X"AB";
-        wait until rising_edge(clk);
-        tx_go   <= '0';
-        wait until tx_done = '1';
+
+        for index in 1 to 100 loop
+            for i in random_byte'range loop
+                uniform(seed1, seed2, r);
+                random_byte(i) := '1' when r > 0.5 else '0';
+            end loop;
+            test_byte(random_byte, tx_byte, tx_go);
+        end loop;
 
 
-        -- Send a command to the UART
-        wait until rising_edge(clk);
-        UART_WRITE_BYTE(X"3F", rx_bit);
-        wait until rising_edge(clk);
-
-        -- Check that the correct command was received
-        if rx_byte = X"3F" then
-          report "Test Passed - Correct Byte Received" severity note;
-        else
-          report "Test Failed - Incorrect Byte Received" severity note;
-        end if;
-
-        assert false report "Tests Complete" severity failure;
+        report "Tests Complete";
 
         finish;
       end process testing;
 
-    test : process (clk, rst) is
-        begin
+    --test : process (clk, rst) is
+    --    begin
 
-        end process;
+    --    end process;
 end uart_tb;
