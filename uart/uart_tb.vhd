@@ -4,7 +4,6 @@ use std.env.finish;
 use IEEE.NUMERIC_STD.ALL;
 use IEEE.MATH_REAL.ALL;
 
-
 entity uart_tb is
 end uart_tb;
 
@@ -65,13 +64,6 @@ begin
         byte => tx_byte
     );
 
-    --setup: process is
-    --begin
-    --    rst <= '0';
-
-    --    finish;
-    --end process setup;
-
     testing: process is
         variable seed1, seed2 : integer := 999;
         variable r : real;
@@ -93,8 +85,4 @@ begin
         finish;
       end process testing;
 
-    --test : process (clk, rst) is
-    --    begin
-
-    --    end process;
 end uart_tb;
