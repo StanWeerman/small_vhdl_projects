@@ -4,7 +4,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity alarm is
     port (
-        clk_1s, rst: in std_logic;
+        clk, clk_1s, rst: in std_logic;
         h2: out natural range 0 to 2;
         h1: out natural range 0 to 4;
         m2: out natural range 0 to 5;
@@ -14,31 +14,36 @@ entity alarm is
         m2_in: in natural range 0 to 5;
         m1_in: in natural range 0 to 9;
         edit: in std_logic;
-        edit_out: out std_logic;
         alarm_out: out std_logic
     );
 end alarm;
 
 architecture alarm of alarm is
+    signal set, edit_f: std_logic;
+
 begin
-    adjust: process(clk_1s, rst) is
+    adjust: process(clk, rst) is
     variable h2_match, h1_match, m2_match, m1_match: std_logic;
     begin
         if (rst) then
-            edit_out <= '0';
+            set <= '0';
             alarm_out <= '0';
             m1 <= 0;
             m2 <= 0;
             h1 <= 0;
             h2 <= 0;
-        elsif rising_edge(clk_1s) then
+        elsif rising_edge(clk) then
             -- Check for match
-            h2_match := '1' when (h2 = h2_in) else '0';
-            h1_match := '1' when (h1 = h1_in) else '0';
-            m2_match := '1' when (m2 = m2_in) else '0';
-            m1_match := '1' when (m1 = m1_in) else '0';
-            if not edit and h2_match and h1_match and m2_match and m1_match then
-                alarm_out <= '1';
+            if (set and not edit) then
+                h2_match := '1' when (h2 = h2_in) else '0';
+                h1_match := '1' when (h1 = h1_in) else '0';
+                m2_match := '1' when (m2 = m2_in) else '0';
+                m1_match := '1' when (m1 = m1_in) else '0';
+                if h2_match and h1_match and m2_match and m1_match then
+                    alarm_out <= '1';
+                    set <= '0';
+                else alarm_out <= '0';
+                end if;
             else alarm_out <= '0';
             end if;
 
@@ -48,9 +53,12 @@ begin
             m2 <= m2;
             m1 <= m1;
 
+            edit_f <= edit;
+            --edit_ff <= edit_f;
+
             -- Start editing
-            edit_out <= edit;
-            if edit_out then
+            if edit and edit_f then
+                set <= '1';
                 h2 <= h2_in;
                 h1 <= h1_in;
                 m2 <= m2_in;

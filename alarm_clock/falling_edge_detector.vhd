@@ -10,26 +10,26 @@ entity falling_edge_detector is
     );
     port (
         clk: in STD_LOGIC;
-        SIGNAL_IN: in STD_LOGIC_VECTOR ((PORT_WIDTH - 1) downto 0);
-        SIGNAL_FALL: out STD_LOGIC_VECTOR ((PORT_WIDTH - 1) downto 0)
+        signal_in: in STD_LOGIC_VECTOR ((PORT_WIDTH - 1) downto 0);
+        signal_fall: out STD_LOGIC_VECTOR ((PORT_WIDTH - 1) downto 0)
     );
 end falling_edge_detector;
 
 architecture falling_edge_detector of falling_edge_detector is
 
-signal SIGNAL_PREV: STD_LOGIC_VECTOR(PORT_WIDTH-1 downto 0);
+signal signal_prev: STD_LOGIC_VECTOR(PORT_WIDTH-1 downto 0);
 
 begin
 
     detect: process (clk) is
     begin
         if rising_edge(clk) then
-            SIGNAL_PREV <= SIGNAL_IN;
-            SIGNAL_FALL <= (others => '0');
+            signal_prev <= signal_in;
+            signal_fall <= (others => '0');
             for index in 0 to (PORT_WIDTH - 1) loop
-                if SIGNAL_PREV(index) = '1' and SIGNAL_IN(index) = '0' then
-                    SIGNAL_FALL(index) <= '1';
-                --else SIGNAL_FALL(index) <= '0';
+                if signal_prev(index) = '1' and signal_in(index) = '0' then
+                    signal_fall(index) <= '1';
+                --else signal_fall(index) <= '0';
                 end if;
             end loop;
         end if;

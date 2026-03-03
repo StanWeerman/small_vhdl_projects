@@ -4,7 +4,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity time is
     port (
-        clk_1s, rst: in std_logic;
+        clk, clk_1s, rst: in std_logic;
         h2: out natural range 0 to 2;
         h1: out natural range 0 to 4;
         m2, s2: out natural range 0 to 5;
@@ -13,25 +13,25 @@ entity time is
         h1_edit: in natural range 0 to 4;
         m2_edit, s2_edit: in natural range 0 to 5;
         m1_edit, s1_edit: in natural range 0 to 9;
-        edit: in std_logic;
-        edit_out: out std_logic
+        edit: in std_logic
     );
 end time;
 
 architecture time of time is
+    signal edit_f: std_logic;
 begin
-    inc_clock: process(clk_1s, rst) is
+    inc_clock: process(clk, rst) is
     begin
         if (rst) then
-            edit_out <= '0';
             s1 <= 0;
             s2 <= 0;
             m1 <= 0;
             m2 <= 0;
             h1 <= 0;
             h2 <= 0;
-        elsif rising_edge(clk_1s) then
+        elsif rising_edge(clk) then
             -- Increment clock by 1
+            if(clk_1s) then
             if s1 = 9 then
                 s1 <= 0;
                 if s2 = 5 then
@@ -56,11 +56,12 @@ begin
                 end if;
             else s1 <= s1 + 1;
             end if;
+            end if;
             -- Done incrementing
 
             -- Start editing
-            edit_out <= edit;
-            if edit_out then
+            edit_f <= edit;
+            if edit and edit_f then
                 h2 <= h2_edit;
                 h1 <= h1_edit;
                 m2 <= m2_edit;
