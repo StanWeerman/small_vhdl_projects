@@ -7,6 +7,8 @@ left
 right
 time_select
 edit_select
+editing
+aediting
 edit_val
 alarm_clock_tb.h2
 alarm_clock_tb.h1
@@ -14,3 +16,4 @@ alarm_clock_tb.m2
 alarm_clock_tb.m1
 alarm_clock_tb.s2
 alarm_clock_tb.s1
+alarm_active

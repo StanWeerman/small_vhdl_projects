@@ -12,7 +12,7 @@ entity alarm_clock_top is
         LED: out std_logic_vector(15 downto 0);
         ca: out std_logic_vector(7 downto 0);
         an: out std_logic_vector(7 downto 0);
-        --LED16_R: out  std_logic;
+        LED16_R: out  std_logic
         --LED16_G: out  std_logic;
         --LED16_B: out  std_logic;
         --LED17_R: out  std_logic;
@@ -39,14 +39,43 @@ architecture alarm_clock_top of alarm_clock_top is
     signal btns_debounce, btns_fall: std_logic_vector(4 downto 0);
     signal time_select: natural range 0 to 3;
     signal alarm_select: natural range 0 to 3;
+    signal alarm_active: std_logic;
+    signal edit_select: natural range 0 to 5;
+    signal edit_select_bits: std_logic_vector(5 downto 0);
     signal editing, aediting: std_logic;
+
+    signal led_0: std_logic := '0';
 begin
-    LED <= SW;
+    with edit_select select
+    edit_select_bits <= "000001" when 5,
+                        "000010" when 4,
+                        "000100" when 3,
+                        "001000" when 2,
+                        "010000" when 1,
+                        "100000" when 0;
+
+    LED <= led_0 & SW(14 downto 10) & edit_select_bits & SW(3 downto 0);
     time_select <= to_integer(unsigned(sw(3 downto 2)));
     alarm_select <= to_integer(unsigned(sw(5 downto 4)));
     editing <= sw(0);
     aediting <= sw(1);
-    LED16_R <= editing;
+    --LED16_R <= alarm_active;
+
+    process (CLK100MHZ, BtnC) is
+    begin
+        if BtnC then
+            LED16_R <= '0';
+            led_0 <= '0';
+        elsif rising_edge(CLK100MHZ) then
+            if (alarm_active) then
+                LED16_R <= '1';
+                led_0 <= '1';
+            else
+                LED16_R <= LED16_R;
+                led_0 <= led_0;
+            end if;
+        end if;
+    end process;
 
     -- Instantiate Debouncer
     debouncer_inst: entity work.debouncer
@@ -55,7 +84,7 @@ begin
         PORT_WIDTH => 5
     )
      port map(
-        SIGNAL_I => BtnU & BtnD & BtnL & BtnR & BtnC,
+        SIGNAL_I => BtnC & BtnR & BtnL & BtnD & BtnU,
         CLK_I => CLK100MHZ,
         SIGNAL_O => btns_debounce
     );
@@ -94,7 +123,9 @@ begin
         m2 => m2,
         s2 => s2,
         time_select => time_select,
-        alarm_select => alarm_select
+        alarm_select => alarm_select,
+        alarm_active => alarm_active,
+        edit_select => edit_select
     );
 
     --Instantiate SSD
