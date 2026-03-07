@@ -65,13 +65,13 @@ begin
                         byte(index) <= bit_in_rr;
                         if index /= 7 then
                             index <= index + 1;
+                        else index <= 0;
                         end if;
                         clk_count <= 0;
                     end if;
 
                     -- NSL
                     if clk_count = CLKS-1 and index = 7 then
-                        index <= 0;
                         state <= STOP;
                     end if;
                 when STOP =>
