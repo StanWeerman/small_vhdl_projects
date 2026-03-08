@@ -68,8 +68,7 @@ begin
         variable seed1, seed2 : integer := 999;
         variable r : real;
         variable random_byte : std_logic_vector(7 downto 0);
-      begin
-
+    begin
 
         for index in 1 to 100 loop
             for i in random_byte'range loop
@@ -79,10 +78,9 @@ begin
             test_byte(random_byte, tx_byte, tx_go);
         end loop;
 
-
         report "Tests Complete";
 
         finish;
-      end process testing;
+    end process testing;
 
 end uart_tb;
