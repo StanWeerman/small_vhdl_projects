@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 
-entity i2c_m is
+entity i2c_target is
     generic(
         ICLK: natural := 10000000;
         BCLK: natural := 400000
@@ -16,9 +16,9 @@ entity i2c_m is
         busy, error: out std_logic;
         sdc, sda: inout std_logic
     );
-end i2c_m;
+end i2c_target;
 
-architecture i2c_m of i2c_m is
+architecture i2c_target of i2c_target is
 
     type i2c_state is
         (IDLE, START, DATA, STOP);
@@ -35,9 +35,9 @@ begin
     begin
         if rising_edge(clk) then
             case state is
-
+                when others =>
             end case;
         end if;
     end process state_machine;
 
-end i2c_m;
+end i2c_target;
