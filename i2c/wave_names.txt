@@ -1,5 +1,4 @@
 clk
-
 addr
 busy
 byte_in

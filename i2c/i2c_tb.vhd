@@ -23,14 +23,28 @@ architecture i2c_tb of i2c_tb is
     constant BCLK: time := 400000 ns;
 
 
-    procedure test_byte (
+    procedure write_byte (
+        constant address: in std_logic_vector(6 downto 0);
         constant byte: in std_logic_vector(7 downto 0);
+        signal addr_out : out std_logic_vector(6 downto 0);
         signal byte_out: out std_logic_vector(7 downto 0);
-        signal go: out std_logic
+        signal rw: out std_logic;
+        signal enable: out std_logic
     ) is
-        begin
+    begin
+        wait until rising_edge(clk);
+        wait until rising_edge(clk);
+        enable <= '1';
+        addr_out <= address;
+        byte_out <= byte;
+        rw <= '1';
 
-    end procedure test_byte;
+        wait until rising_edge(clk);
+        wait until rising_edge(clk);
+        wait until rising_edge(clk);
+        enable <= '0';
+        wait until busy = '0';
+    end procedure write_byte;
 begin
     clk <= not clk after 1 ns;
 
@@ -56,7 +70,11 @@ begin
     testing: process is
     begin
         rst <= '0';
-        wait for 500 ns;
+
+        write_byte("1001001", "01010101", addr, byte_in, rw, enable);
+
+        write_byte("0010010", "10101010", addr, byte_in, rw, enable);
+        --wait for 500 ns;
 
         report "Tests Complete";
 
