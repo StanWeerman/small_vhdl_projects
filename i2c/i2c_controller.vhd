@@ -93,10 +93,9 @@ begin
             busy <= '0';
             index <= 7;
         elsif rising_edge(sda_clk) then
-            --if (rising_edge(sda_clk)) then
                 case state is
                     when IDLE =>
-                    --sda_out <= sda_out xor '1';
+
                         if (enable_r) then
                             busy <= '1';
                             addr_r <= addr;
@@ -155,7 +154,6 @@ begin
                             busy <= '1';
                             addr_r <= addr;
                             rw_r <= rw;
-                            state <= START;
                             index <= 7;
                             state <= START;
                         else state <= STOP;
@@ -165,7 +163,6 @@ begin
                         state <= IDLE;
                     when others =>
                 end case;
-            --end if;
         end if;
     end process state_machine;
 
