@@ -12,7 +12,8 @@ architecture audio_tb of audio_tb is
     signal rst: std_logic := '1';
     signal enable: std_logic;
     signal cycle_done: std_logic;
-    signal note: natural range 0 to 11;
+    signal note: natural range 0 to 87;
+    signal duty: natural range 0 to 99;
     signal AUD_PWM: std_logic;
     signal AUD_SD: std_logic;
 begin
@@ -29,6 +30,7 @@ begin
         enable => enable,
         cycle_done => cycle_done,
         note => note,
+        duty => duty,
         AUD_PWM => AUD_PWM,
         AUD_SD => AUD_SD
     );
@@ -37,6 +39,7 @@ begin
     begin
         rst <= '0';
         note <= 1;
+        duty <= 50;
         enable <= '1';
 
         wait until rising_edge(cycle_done);
@@ -44,7 +47,8 @@ begin
         wait until rising_edge(cycle_done);
         wait until rising_edge(cycle_done);
 
-        note <= 2;
+        note <= 80;
+        duty <= 50;
 
         wait until rising_edge(cycle_done);
         wait until rising_edge(cycle_done);

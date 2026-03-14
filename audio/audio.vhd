@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use IEEE.NUMERIC_STD.ALL;
+use IEEE.MATH_REAL.ALL;
 
 entity audio is
     generic (
@@ -10,24 +11,59 @@ entity audio is
     port (
         rst, clk, enable: in std_logic;
         cycle_done: out std_logic;
-        note: in natural range 0 to 11;
+        duty: in natural range 0 to 99;
+        note: in natural range 0 to 87;
         AUD_PWM: out std_logic;
         AUD_SD: out std_logic
     );
 end audio;
 
 architecture audio of audio is
-    constant CLKS: natural := IFREQ/AFREQ;
-    signal clk_count: natural range 0 to CLKS;
-    signal period: natural range 0 to CLKS;
+    --constant CLKS: natural := IFREQ/AFREQ;
+    signal clks: natural;
+    signal clk_count: natural range 0 to IFREQ;
+    signal period: natural range 0 to IFREQ;
     signal PWM: std_logic;
+
+    constant NUM_NOTES: natural := 88;
+    type freqs_array is array (NUM_NOTES-1 downto 0) of natural;
+
+    function init_freqs return freqs_array is
+        variable temp_freqs: freqs_array;
+        variable temp_real : real;
+    begin
+            for i in temp_freqs'range loop
+                temp_real := 2 ** (real(((i+1)-49)/(12)));
+                temp_freqs(i) := natural(ceil(temp_real)) * 440; -- Get frequency for the note
+            end loop;
+            return temp_freqs;
+    end function;
+
+    constant NOTE_FREQS: freqs_array := init_freqs;
+
+    type clks_array is array (NUM_NOTES-1 downto 0) of natural;
+
+    function init_clks return clks_array is
+        variable temp_clks: clks_array;
+    begin
+            for i in temp_clks'range loop
+                temp_clks(i) := IFREQ / NOTE_FREQS(i); -- Get clks for the note
+            end loop;
+            return temp_clks;
+    end function;
+
+    constant NOTE_CLKS: clks_array := init_clks;
+
 begin
     AUD_SD <= enable;
     AUD_PWM <= '0' when PWM = '0' else 'Z';
 
     cycle_done <= '1' when clk_count = 0 else '0';
-    --with note select
-        period <= CLKS/(note) when note /= 0 else 0;
+
+    clks <= IFREQ / NOTE_FREQS(note);
+    --clks <= NOTE_CLKS(note);
+    --with duty select
+        period <= (clks/100)*(duty+1);
 
     pmw: process (clk, rst) is
     begin
