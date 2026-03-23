@@ -13,7 +13,13 @@ sda
 scl_out
 sda_clk
 sda_out
-state
+i2c_controller.state
+i2c_target.state
 addr_r
 rw_r
 byte_r
+addr_t
+byte_in_t
+byte_out_t
+busy_t
+error_t

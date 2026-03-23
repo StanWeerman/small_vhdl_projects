@@ -40,7 +40,7 @@ architecture i2c_controller of i2c_controller is
     signal state: i2c_state := IDLE;
 begin
     scl <= '0' when scl_out = '0' else 'Z';
-    sda_others <= '0' when sda_clk = '0' and sda_out = '0' else 'Z';
+    sda_others <= '0' when sda_out = '0' else 'Z';
     sda_start <= '0' when sda_clk = '0' else 'Z';
     sda_stop <= 'Z' when sda_clk = '0' else '0';
     with state select
@@ -89,78 +89,114 @@ begin
     state_machine : process(sda_clk) is
     begin
         if (rst) then
-            sda_out <= '0';
+            sda_out <= '1';
             busy <= '0';
             index <= 7;
+            error <= '0';
         elsif rising_edge(sda_clk) then
                 case state is
                     when IDLE =>
+                        -- NSL
+                        if enable_r then state <= START;
+                        end if;
 
-                        if (enable_r) then
+                        -- RTL
+                        if enable_r then
+                            error <= '0';
                             busy <= '1';
                             addr_r <= addr;
                             rw_r <= rw;
-                            state <= START;
                             index <= 7;
                         end if;
                     when START =>
+                        -- NSL
+                        state <= ADDRESS;
+
+                        -- RTL
                         sda_out <= addr_r(index-1);
                         index <= index - 1;
-                        state <= ADDRESS;
                     when ADDRESS =>
-                        if (index = 0) then
+                        -- NSL
+                        if index = 0 then state <= GETACK;
+                        end if;
+
+                        -- RTL
+                        if index = 0 then
                             sda_out <= rw_r;
                             byte_r <= byte_in;
-                            state <= GETACK;
                             index <= 7;
                         else
-                            index <= index -1;
+                            index <= index - 1;
                             sda_out <= addr_r(index-1);
                         end if;
                     when GETACK =>
-                        index <= index - 1;
-                        state <= DATA;
-                        if rw_r then
-                            sda_out <= byte_r(index);
-                        else
-                            sda_out <= '1';
-                        end if;
-                        if (enable_r) then
-                            byte_r <= byte_in;
-                            state <= DATA;
+                        -- NSL
+                        --if sda /= '0' then state <= IDLE;
+                        if (enable_r = '1' and rw_r = rw and addr_r = addr) then state <= DATA;
+                        elsif enable_r then state <= START;
                         else state <= STOP;
                         end if;
-                    when DATA =>
-                        if (index /= 0) then index <= index - 1;
-                        end if;
-                        if rw_r then
-                            sda_out <= byte_r(index);
-                            if (index = 0) then
-                                state <= GETACK;
-                                index <= 7;
-                            end if;
-                        else
-                            if (index = 0) then
-                                sda_out <= '1';
-                                state <= SENDACK;
-                            end if;
-                        end if;
-                    when SENDACK =>
+
+                        -- RTL
                         index <= 6;
+                        --if sda /= '0' then
+                        --    error <= '1';
                         if (enable_r = '1' and rw_r = rw and addr_r = addr) then
-                            byte_r <= byte_in;
-                            state <= DATA;
-                        elsif (enable_r) then
+                            if rw_r then
+                                byte_r <= byte_in;
+                                index <= index - 1;
+                                sda_out <= byte_r(index);
+                            else sda_out <= '1';
+                            end if;
+                        elsif enable_r then
                             busy <= '1';
+                            error <= '0';
                             addr_r <= addr;
                             rw_r <= rw;
                             index <= 7;
-                            state <= START;
+                        end if;
+                    when DATA =>
+                        -- NSL
+                        if index = 0 then
+                            if rw_r then state <= GETACK;
+                            else state <= SENDACK;
+                            end if;
+                        end if;
+
+                        -- RTL
+                        if (index /= 0) then index <= index - 1;
+                        else index <= 7;
+                        end if;
+                        if rw_r then sda_out <= byte_r(index);
+                        else
+                            byte_out(index) <= '0' when sda = '0' else '1';
+                            if index = 0 then sda_out <= '1'; -- Send '1' as ACK
+                            end if;
+                        end if;
+                    when SENDACK =>
+                        -- NSL
+                        if (enable_r = '1' and rw_r = rw and addr_r = addr) then state <= DATA;
+                        elsif (enable_r) then state <= START;
                         else state <= STOP;
                         end if;
+
+                        -- RTL
+                        index <= 6;
+                        sda_out <= '1';
+                        if (enable_r = '1' and rw_r = rw and addr_r = addr) then byte_r <= byte_in;
+                        elsif (enable_r) then
+                            busy <= '1';
+                            error <= '0';
+                            addr_r <= addr;
+                            rw_r <= rw;
+                            index <= 7;
+                        end if;
                     when STOP =>
-                        busy <= '0';
+                        -- NSL
                         state <= IDLE;
+
+                        -- RTL
+                        busy <= '0';
                     when others =>
                 end case;
         end if;
