@@ -21,8 +21,8 @@ end audio;
 architecture audio of audio is
     --constant CLKS: natural := IFREQ/AFREQ;
     signal clks: natural;
-    signal clk_count: natural range 0 to IFREQ;
-    signal period: natural range 0 to IFREQ;
+    signal clk_count: natural;
+    signal period: natural;
     signal PWM: std_logic;
 
     constant NUM_NOTES: natural := 88;
@@ -33,8 +33,8 @@ architecture audio of audio is
         variable temp_real : real;
     begin
             for i in temp_freqs'range loop
-                temp_real := 2 ** (real(((i+1)-49)/(12)));
-                temp_freqs(i) := natural(ceil(temp_real)) * 440; -- Get frequency for the note
+                temp_real := 2.0 ** ((real(i)+1.0-49.0)/12.0);
+                temp_freqs(i) := natural(temp_real * 440.0); -- Get frequency for the note
             end loop;
             return temp_freqs;
     end function;
@@ -53,13 +53,14 @@ architecture audio of audio is
     end function;
 
     constant NOTE_CLKS: clks_array := init_clks;
-
+    signal freq: natural;
 begin
     AUD_SD <= enable;
     AUD_PWM <= '0' when PWM = '0' else 'Z';
 
     cycle_done <= '1' when clk_count = 0 else '0';
 
+    freq <= NOTE_FREQS(note);
     clks <= IFREQ / NOTE_FREQS(note);
     --clks <= NOTE_CLKS(note);
     --with duty select
@@ -71,7 +72,7 @@ begin
             PWM <= '0';
             clk_count <= 0;
         elsif (rising_edge(CLK)) then
-            if (clk_count = CLKS) then clk_count <= 0;
+            if (clk_count = CLKS or clk_count >= CLKS*2) then clk_count <= 0;
             else clk_count <= clk_count + 1;
             end if;
             if (clk_count <= period) then

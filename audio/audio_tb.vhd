@@ -16,6 +16,21 @@ architecture audio_tb of audio_tb is
     signal duty: natural range 0 to 99;
     signal AUD_PWM: std_logic;
     signal AUD_SD: std_logic;
+
+    procedure test_note (
+        constant note_in: in natural range 0 to 87;
+        constant duty_in: in natural range 0 to 99;
+        signal note_out: out natural range 0 to 87;
+        signal duty_out: out natural range 0 to 99
+    ) is
+        begin
+            note_out <= note_in;
+            duty_out <= duty_in;
+            wait until rising_edge(cycle_done);
+            wait until rising_edge(cycle_done);
+            wait until rising_edge(cycle_done);
+            wait until rising_edge(cycle_done);
+    end procedure test_note;
 begin
     clk <= not clk after 1 ns;
 
@@ -42,18 +57,15 @@ begin
         duty <= 50;
         enable <= '1';
 
-        wait until rising_edge(cycle_done);
-        wait until rising_edge(cycle_done);
-        wait until rising_edge(cycle_done);
-        wait until rising_edge(cycle_done);
+        for i in 0 to 87 loop
+            test_note(i, 50, note, duty);
+        end loop;
 
-        note <= 80;
-        duty <= 50;
-
-        wait until rising_edge(cycle_done);
-        wait until rising_edge(cycle_done);
-        wait until rising_edge(cycle_done);
-        wait until rising_edge(cycle_done);
+        --test_note(0, 50, note, duty);
+        --test_note(1, 50, note, duty);
+        --test_note(44, 50, note, duty);
+        --test_note(80, 50, note, duty);
+        --test_note(87, 50, note, duty);
 
         report "Tests Complete";
 
